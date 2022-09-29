@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 from ckiptagger import WS, construct_dictionary
 import re, csv, os
-import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
+import string
+import nltk
+nltk.download('punkt')
 
 ws = WS("./data")
 
-path = "C:/Users/ken99/PycharmProjects/hyphenation/Grammer_v6.txt"
+# 設定保留詞
+path = "C:/Users/Ken/hyphenation/Grammer_v6.txt"
 with open(path, 'r', encoding='utf-8-sig') as f:
     key_word = f.read()
     # 將list轉成dict型態，這邊每個權重都設為1
@@ -18,8 +19,8 @@ f.close()
 
 # 讀取文本（corpus）
 for info in os.listdir('./txt'):
-    domain = os.path.abspath('./txt') #獲取資料夾的路徑，此處其實沒必要這麼寫，目的是為了熟悉os的資料夾操作
-    path = os.path.join(domain, info) #將路徑與檔名結合起來就是每個檔案的完整路徑
+    domain = os.path.abspath('./txt')
+    path = os.path.join(domain, info)
     filename = os.path.splitext(info)[0]
     with open(path, 'r', encoding='utf-8') as f:
         corpus = f.readlines()
@@ -29,39 +30,59 @@ for info in os.listdir('./txt'):
         clean_c = re.sub(r'\n', '', i)
         if len(clean_c) > 0:
             collect_corpus.append(clean_c)
-    word_segment = ws(collect_corpus,
-                      recommend_dictionary=dict_for_CKIP)
-    cut_corpus = []
+
+    # 中文斷詞
+    word_segment = ws(collect_corpus, recommend_dictionary=dict_for_CKIP)
+    CHI_cut_corpus = []
+    ENG_cut_corpus = []
+    CHI_judge = re.compile(u'[\u4e00-\u9fa5]+')
     for i in word_segment:
         for word in i:
-            cut_corpus.append(word)
+            if word in string.punctuation:
+                continue
+            match = CHI_judge.search(word)
+            if match:
+                CHI_cut_corpus.append(word)
+            else:
+                ENG_cut_corpus.append(word)
+    fin_ENG = []
+    # 英文斷詞
+    for i in ENG_cut_corpus:
+        sentences = nltk.word_tokenize(i)
+        for eng_word in sentences:
+            fin_ENG.append(eng_word)
+
     if not os.path.isdir('./hyphenated_txt'):
         os.mkdir('./hyphenated_txt')
-    df = pd.DataFrame(cut_corpus)
-    df.to_csv(f'./hyphenated_txt/{filename}.csv', encoding='utf-8-sig')
 
-path = 'C:/Users/ken99/PycharmProjects/hyphenation/stopWords_v11_3_3.txt'
-with open(path, 'r', encoding='utf-8-sig') as f:
-    stop_word = f.read()
-    stop_word = stop_word.split('\n')
-f.close()
+    # 全部小寫
+    lower_cut_corpus = []
+    for i in fin_ENG:
+        lower = i.lower()
+        lower_cut_corpus.append(lower)
+    all_words = CHI_cut_corpus+lower_cut_corpus
+
+    # 刪除停用詞
+    with open('./stopWords.txt', encoding='utf-8-sig') as f:
+        stop_word = f.read()
+        stop_words = stop_word.split('\n')
+    fin_words = []
+    for word in all_words:
+        if word in stop_words:
+            pass
+        else:
+            fin_words.append(word)
+
+    path = f'./hyphenated_txt/{filename}.txt'
+    with open(path, 'w', encoding='utf-8-sig') as f:
+        for i in fin_words:
+            f.writelines(i+"\n")
 
 
 
 
 
-text_cv = CountVectorizer(max_df=0.8, min_df=4, stop_words=stop_word)
-td_matrix = text_cv.fit_transform(cut_corpus)
-print(text_cv.vocabulary_.items())
-# tfidf = TfidfTransformer()
-# tfidf_matrix = tfidf.fit_transform(td_matrix)
-# import pandas as pd
-# df = pd.DataFrame(tfidf_matrix.T.toarray(), index=text_cv.vocabulary_.keys())
-# df.to_csv('output.csv', index=text_cv.vocabulary_.keys(), encoding='utf-8-sig')
-# with open('output.csv', 'w', newline='') as csvfile:
-#   # 建立 CSV 檔寫入器
-#   writer = csv.writer(csvfile)
-#   writer.write(df)
-#print(df)
 
-# print(cut_corpus)
+
+
+
