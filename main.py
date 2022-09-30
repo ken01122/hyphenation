@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 from ckiptagger import WS, construct_dictionary
-import re, csv, os
+import re
+import os
 import string
 import nltk
-nltk.download('punkt')
 
+nltk.download('punkt')
 ws = WS("./data")
 
 # 設定保留詞
-path = "C:/Users/Ken/hyphenation/Grammer_v6.txt"
+path = "./Grammer_v6.txt"
 with open(path, 'r', encoding='utf-8-sig') as f:
     key_word = f.read()
     # 將list轉成dict型態，這邊每個權重都設為1
@@ -77,12 +78,3 @@ for info in os.listdir('./txt'):
     with open(path, 'w', encoding='utf-8-sig') as f:
         for i in fin_words:
             f.writelines(i+"\n")
-
-
-
-
-
-
-
-
-
