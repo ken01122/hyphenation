@@ -8,7 +8,7 @@ with open(path, 'r', encoding='utf-8-sig') as f:
     key_word = key_word.split('\n')
     f.close()
 
-path = r'mid-tfidf.txt'
+path = r'median_tfidf.txt'
 with open(path, 'r', encoding='utf-8-sig') as f:
     mid_tfidf = f.read()
     f.close()
