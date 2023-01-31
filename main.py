@@ -9,7 +9,7 @@ nltk.download('punkt')
 ws = WS("./data")
 
 # 設定保留詞
-path = "./Grammer_v6.txt"
+path = "./savewords.txt"
 with open(path, 'r', encoding='utf-8-sig') as f:
     key_word = f.read()
     # 將list轉成dict型態，這邊每個權重都設為1
@@ -28,7 +28,7 @@ for info in os.listdir('./txt'):
     f.close()
     collect_corpus = []
     for i in corpus:
-        clean_c = re.sub(r'\n', '', i)
+        clean_c = re.sub(r'\n', "", i)
         if len(clean_c) > 0:
             collect_corpus.append(clean_c)
 

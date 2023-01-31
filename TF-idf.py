@@ -7,10 +7,8 @@ for info in os.listdir('./hyphenated_txt'):
     domain = os.path.abspath('./hyphenated_txt')
     path = os.path.join(domain, info)
     with open(path, 'r', encoding='utf-8-sig') as f:
-        # 計算TF
-        file = f.read()
-        f.close()
-        file = file.split('\n')
+        file = f.read().split('\n')
+        del file[-1]   # 這次讀檔會多讀一個值所以把它刪掉，之後沒問題這行要拿掉
         words_count = []
         count = {}
         for word in file:
@@ -19,7 +17,6 @@ for info in os.listdir('./hyphenated_txt'):
             else:
                 count[word] = 1
         words_count.append(count)
-# 計算idf
         all_words = []
         for word in words_count:
             all_words.extend(list(word.keys()))
@@ -41,6 +38,7 @@ for info in os.listdir('./hyphenated_txt'):
         # 計算TF
         file = f.read()
         file = file.split('\n')
+        del file[-1]    # 這次讀檔會多讀一個值所以把它刪掉，之後沒問題這行要拿掉
         words_count = []
         count = {}
         for word in file:
@@ -57,14 +55,14 @@ for info in os.listdir('./hyphenated_txt'):
 
         idf = []
         total_file = 0
-        for path in os.listdir(r'C:\Users\Ken\hyphenation\hyphenated_txt'):
-            if os.path.isfile(os.path.join(r'C:\Users\Ken\hyphenation\hyphenated_txt', path)):
+        for path in os.listdir(r'hyphenated_txt'):
+            if os.path.isfile(os.path.join(r'hyphenated_txt', path)):
                 total_file += 1
         for word_count in words_count:
             inv_fre = {}
             for word in word_count.keys():
                 occurrence = occurrences_of_word[word]
-                inv_fre[word] = math.log(round((total_file/occurrence), 5))
+                inv_fre[word] = math.log(10, round((total_file/occurrence), 5))
                 idf.append(inv_fre[word])
 
         tf_idf = [round(x*y, 5) for x, y in zip(tf, idf)]
@@ -75,6 +73,6 @@ for info in os.listdir('./hyphenated_txt'):
             all_tfidf.append(x)
 
 all_tfidf.sort(reverse=True, key=float)
-path = r'C:\Users\Ken\hyphenation\mid-tfidf.txt'
+path = r'median_tfidf.txt'
 with open(path, 'w', encoding='utf-8-sig') as f:
     f.write(str(all_tfidf[int((len(all_tfidf)/2))]))
